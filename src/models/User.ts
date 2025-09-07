@@ -80,7 +80,12 @@ userSchema.pre<IUser>('save', async function(next) {
 
 // Compare password method
 userSchema.methods.comparePassword = async function(enteredPassword: string): Promise<boolean> {
-  return await bcrypt.compare(enteredPassword, this.password);
+  try {
+    return await bcrypt.compare(enteredPassword, this.password);
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    return false;
+  }
 };
 
 // Virtual for full name

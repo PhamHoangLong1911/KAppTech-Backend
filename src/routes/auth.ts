@@ -16,7 +16,18 @@ const router = express.Router();
 const generateToken = (id: string): string => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    throw new Error('JWT_SECRET is not defined');
+    console.error('JWT_SECRET is not defined in environment variables');
+    // In production, use a random string for this session only (not ideal but prevents crashes)
+    if (process.env.NODE_ENV === 'production') {
+      const tempSecret = Math.random().toString(36).substring(2, 15) + 
+                        Math.random().toString(36).substring(2, 15);
+      console.warn('Using temporary random JWT_SECRET. This is insecure!');
+      return jwt.sign({ id }, tempSecret, {
+        expiresIn: '1h', // Short expiry for temporary tokens
+      } as jwt.SignOptions);
+    } else {
+      throw new Error('JWT_SECRET is not defined');
+    }
   }
   return jwt.sign({ id }, secret, {
     expiresIn: process.env.JWT_EXPIRE || '7d',
@@ -104,6 +115,8 @@ router.post('/login', [
   body('password').notEmpty().withMessage('Password is required')
 ], async (req: Request, res: Response) => {
   try {
+    console.log('Login attempt:', { email: req.body.email });
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -114,6 +127,13 @@ router.post('/login', [
     }
 
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
 
     // Check if user exists (include password field)
     const user = await User.findOne({ email }).select('+password');
@@ -136,6 +156,8 @@ router.post('/login', [
     // Update last login
     user.lastLogin = new Date();
     await user.save();
+
+    console.log('Login successful for user:', user._id);
 
     res.json({
       success: true,

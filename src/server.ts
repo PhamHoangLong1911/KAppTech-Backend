@@ -4,10 +4,14 @@ import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
-import connectDB from './config/database';
 
 // Load environment variables
 dotenv.config();
+
+// Check environment variables
+import './utils/envCheck';
+
+import connectDB from './config/database';
 
 // Import routes
 import authRoutes from './routes/auth';
@@ -78,11 +82,17 @@ app.get('/', (req, res) => {
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
+  console.error('Error details:', {
+    message: err.message,
+    stack: err.stack,
+    name: err.name,
+    code: err.code
+  });
+  
   res.status(500).json({
     success: false,
     message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    error: err.message || 'Internal server error'
   });
 });
 
