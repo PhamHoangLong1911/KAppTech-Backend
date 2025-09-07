@@ -57,12 +57,22 @@ app.use('/api/case-studies', caseStudyRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 
-// Health check endpoint
+// Health check endpoints
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'KAppTech CMS API is running',
     timestamp: new Date().toISOString()
+  });
+});
+
+// Root endpoint for debugging
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'KAppTech CMS API is running on Vercel',
+    env: process.env.NODE_ENV,
+    routes: ['/api/auth/login', '/api/health', '/api/users', '/api/pages']
   });
 });
 

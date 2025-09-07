@@ -1,0 +1,9 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "Serverless API functions for KAppTech Backend",
+  "main": "index.ts",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
